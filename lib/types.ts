@@ -30,13 +30,6 @@ export interface Item {
   updatedAt: string;
 }
 
-export interface BulkResult {
-  created: Item[];
-  createdCount: number;
-  duplicates: string[];
-  excludedCount: number;
-}
-
 export interface ItineraryEvent {
   _id: string;
   tripId: string;

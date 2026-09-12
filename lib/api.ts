@@ -1,4 +1,4 @@
-import type { BulkResult, Item, ItemOwner, ItemPriority, ItineraryEvent, Trip } from "./types";
+import type { Item, ItemOwner, ItemPriority, ItineraryEvent, Trip } from "./types";
 
 async function parseOrThrow(res: Response) {
   if (!res.ok) {
@@ -47,18 +47,6 @@ export function updateItem(
 
 export function deleteItem(id: string): Promise<null> {
   return fetch(`/api/items/${id}`, { method: "DELETE" }).then(parseOrThrow);
-}
-
-export function bulkCreateItems(
-  tripId: string,
-  text: string,
-  excludeNames?: string[]
-): Promise<BulkResult> {
-  return fetch(`/api/trips/${tripId}/items/bulk`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, excludeNames }),
-  }).then(parseOrThrow);
 }
 
 export function createItineraryEvent(

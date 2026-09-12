@@ -1,12 +1,11 @@
 "use client";
 
 import { DndContext, type DragEndEvent } from "@dnd-kit/core";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { createItem, deleteItem, fetcher, updateItem } from "@/lib/api";
-import type { BulkResult, Item, ItemOwner, ItemStatus } from "@/lib/types";
+import type { Item, ItemOwner, ItemStatus } from "@/lib/types";
 import { ITEM_CATEGORY_PRESETS } from "@/lib/types";
-import BulkPasteModal from "./BulkPasteModal";
 import DroppableColumn from "./DroppableColumn";
 import ItemCard from "./ItemCard";
 
@@ -14,21 +13,38 @@ interface TripBoardProps {
   tripId: string;
 }
 
+type OwnerFilter = "all" | ItemOwner;
+
 export default function TripBoard({ tripId }: TripBoardProps) {
   const { data: items, mutate } = useSWR<Item[]>(`/api/trips/${tripId}/items`, fetcher);
 
   const [newItemName, setNewItemName] = useState("");
   const [newItemOwner, setNewItemOwner] = useState<ItemOwner>("parent");
   const [newItemCategory, setNewItemCategory] = useState("");
-  const [showBulkModal, setShowBulkModal] = useState(false);
-  const [banner, setBanner] = useState<string | null>(null);
+  const [ownerFilter, setOwnerFilter] = useState<OwnerFilter>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [error, setError] = useState<string | null>(null);
 
   const displayItems = items ?? [];
-  const incomplete = displayItems.filter((item) => item.status === "incomplete");
-  const complete = displayItems.filter((item) => item.status === "complete");
   const total = displayItems.length;
-  const completionRate = total === 0 ? 0 : Math.round((complete.length / total) * 100);
+  const completeCount = displayItems.filter((item) => item.status === "complete").length;
+  const completionRate = total === 0 ? 0 : Math.round((completeCount / total) * 100);
+
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    (items ?? []).forEach((item) => {
+      if (item.category) set.add(item.category);
+    });
+    return Array.from(set).sort();
+  }, [items]);
+
+  const filteredItems = displayItems.filter((item) => {
+    if (ownerFilter !== "all" && (item.owner ?? "parent") !== ownerFilter) return false;
+    if (categoryFilter !== "all" && item.category !== categoryFilter) return false;
+    return true;
+  });
+  const incomplete = filteredItems.filter((item) => item.status === "incomplete");
+  const complete = filteredItems.filter((item) => item.status === "complete");
 
   async function changeStatus(item: Item, status: ItemStatus) {
     if (item.status === status || !items) return;
@@ -90,7 +106,6 @@ export default function TripBoard({ tripId }: TripBoardProps) {
   }
 
   async function handleDelete(item: Item) {
-    if (!confirm(`"${item.name}"을 삭제할까요?`)) return;
     setError(null);
     try {
       await deleteItem(item._id);
@@ -98,13 +113,6 @@ export default function TripBoard({ tripId }: TripBoardProps) {
     } catch (err) {
       setError(err instanceof Error ? err.message : "삭제에 실패했습니다");
     }
-  }
-
-  function handleBulkCreated(result: BulkResult) {
-    setShowBulkModal(false);
-    setBanner(`${result.createdCount}개 등록됨 (제외 ${result.excludedCount}개)`);
-    mutate();
-    setTimeout(() => setBanner(null), 4000);
   }
 
   return (
@@ -122,18 +130,13 @@ export default function TripBoard({ tripId }: TripBoardProps) {
         </div>
       </div>
 
-      {banner && (
-        <div className="mb-4 rounded-sm bg-primary/10 px-3 py-2 text-sm font-medium text-primary">
-          {banner}
-        </div>
-      )}
       {error && (
         <div className="mb-4 rounded-sm bg-error/10 px-3 py-2 text-sm font-medium text-error">
           {error}
         </div>
       )}
 
-      <div className="mb-6 flex flex-wrap gap-3 rounded-xl border border-hairline bg-surface-soft p-4">
+      <div className="mb-4 flex flex-wrap gap-3 rounded-xl border border-hairline bg-surface-soft p-4">
         <form onSubmit={handleAddItem} className="flex flex-1 flex-wrap gap-2">
           <input
             type="text"
@@ -170,12 +173,32 @@ export default function TripBoard({ tripId }: TripBoardProps) {
             추가
           </button>
         </form>
-        <button
-          onClick={() => setShowBulkModal(true)}
-          className="rounded-sm border border-ink px-4 py-2 text-sm font-medium text-ink hover:bg-surface-strong"
+      </div>
+
+      <div className="mb-6 flex flex-wrap gap-2">
+        <select
+          value={ownerFilter}
+          onChange={(e) => setOwnerFilter(e.target.value as OwnerFilter)}
+          className="rounded-sm border border-hairline bg-canvas px-3 py-2 text-sm"
+          aria-label="구분 필터"
         >
-          대량 붙여넣기
-        </button>
+          <option value="all">전체 구분</option>
+          <option value="parent">부모</option>
+          <option value="baby">아기</option>
+        </select>
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          className="rounded-sm border border-hairline bg-canvas px-3 py-2 text-sm"
+          aria-label="분류 필터"
+        >
+          <option value="all">전체 분류</option>
+          {categories.map((category) => (
+            <option key={category} value={category}>
+              {category}
+            </option>
+          ))}
+        </select>
       </div>
 
       <DndContext onDragEnd={handleDragEnd}>
@@ -204,15 +227,6 @@ export default function TripBoard({ tripId }: TripBoardProps) {
           </DroppableColumn>
         </div>
       </DndContext>
-
-      {showBulkModal && (
-        <BulkPasteModal
-          tripId={tripId}
-          existingItems={displayItems}
-          onClose={() => setShowBulkModal(false)}
-          onCreated={handleBulkCreated}
-        />
-      )}
     </div>
   );
 }

@@ -1,0 +1,35 @@
+# Ralph Progress Log
+
+## US-001~004: Backend (완료) — Trip/Item 모델, Trip/Item/Bulk API
+- create-next-app이 기존 파일(CLAUDE.md/PRD.md/.omc) 충돌로 루트에 직접 스캐폴딩 불가 -> `scaffold-tmp` 하위 폴더에 생성 후 필요한 파일만 루트로 이동
+- 루트에 이미 실제 MongoDB Atlas URI가 담긴 `.env` 존재 (다른 세션에서 미리 배치). `.gitignore`의 `.env*`로 커밋 제외 확인.
+- lib/mongodb.ts: global 캐시 기반 Mongoose 싱글턴
+- models/Trip.ts, models/Item.ts
+- Trip/Item CRUD API + 대량 붙여넣기 API(파싱/중복감지/excludeNames 제외) 전부 curl로 실제 MongoDB against 검증
+
+## US-005~008: 프론트엔드 (완료) — Trip UI, Item CRUD UI, D&D, 대량 붙여넣기 UI
+- SWR 기반 lib/api.ts, lib/types.ts
+- app/trips/page.tsx, app/trips/[id]/page.tsx, components/{TripBoard,ItemCard,DroppableColumn,BulkPasteModal}.tsx
+- dnd-kit으로 미완료/완료 2컬럼 드래그앤드롭, SWR mutate(optimisticData + rollbackOnError)로 낙관적 업데이트 구현
+- Playwright(devDependency로 설치 후 검증 완료 후 제거)로 실제 브라우저에서 전 플로우 검증: 여행 생성 -> 개별 등록 -> 체크박스 토글(취소선) -> 대량 붙여넣기(중복 감지/제외) -> 드래그앤드롭 상태변경(새로고침 후 유지 확인) -> 완료율 표시
+
+## Architect 리뷰 (STANDARD tier, Sonnet) — APPROVED
+- 전 파일 실제 코드 추적, 대량붙여넣기 로직 손으로 트레이스, SWR rollback 시맨틱 확인
+- 지적사항(non-blocking): PATCH 라우트에 runValidators 없음, BulkPasteModal의 중복 체크박스가 정규화된 이름 기준으로 결합됨(동일 이름 중복 라인 시 UX 한계, 정합성 문제는 아님)
+
+## Deslop 패스 (ai-slop-cleaner)
+- 중복 제거: `normalize()`가 서버(bulk route)와 클라이언트(BulkPasteModal)에 각각 구현되어 있던 것을 lib/normalize.ts로 통합
+- 중복 제거: 4개 API route 파일에 동일하게 선언되어 있던 `Params` 타입 + `mongoose.isValidObjectId` 404 가드 패턴을 lib/route-helpers.ts (`IdRouteParams`, `invalidIdResponse`)로 통합
+- Architect 권고사항 반영: Trip/Item PATCH에 `runValidators: true` 추가
+- **회귀 발견 및 즉시 수정**: runValidators 추가로 인해 잘못된 enum/날짜 값 PATCH 시 처리되지 않은 500 에러가 발생하는 회귀가 생김 -> PATCH 핸들러에 `try/catch (err instanceof mongoose.Error)` 추가하여 ValidationError/CastError를 400으로 변환. curl로 재검증(잘못된 status enum, 잘못된 날짜 문자열 모두 400 확인, 정상 값은 그대로 200).
+
+## 최종 회귀 검증
+- npm run build / npm run lint: 클린
+- curl 기반 Trip/Item/Bulk API 전체 재검증 (정상 케이스 + invalid id + invalid enum/date 케이스)
+- Playwright 브라우저 전체 플로우 재검증 (deslop 이후에도 전부 PASS)
+- 테스트 중 생성된 트립/아이템은 실제 MongoDB에서 정리 완료, playwright devDependency는 검증 후 제거
+
+## 참고 (환경)
+- 개발 서버가 백그라운드에서 `npm run dev`로 실행 중이었음 (포트 3000, 검증용)
+- 이 셸 환경에는 python3가 없음 -> 스크립팅 필요시 node -e 사용
+- P1 기능(카테고리/우선순위/템플릿/다중여행 전환 UI/수동 정렬)은 docs/PLAN.md Phase 7~11에 정의되어 있으며 이번 세션 범위 밖 (PRD P0만 요청됨)

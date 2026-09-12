@@ -34,26 +34,30 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center px-4">
-      <h1 className="mb-6 text-xl font-bold">여행 준비물 체크리스트</h1>
-      <form onSubmit={handleSubmit} className="flex w-full flex-col gap-3">
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="비밀번호"
-          className="rounded border px-3 py-2"
-          autoFocus
-        />
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <button
-          type="submit"
-          disabled={submitting}
-          className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
-        >
-          {submitting ? "확인 중..." : "입장"}
-        </button>
-      </form>
+    <main className="flex min-h-screen flex-col items-center justify-center bg-canvas px-4">
+      <div className="w-full max-w-sm">
+        <h1 className="mb-8 text-center text-[22px] font-medium leading-tight text-ink">
+          여행 준비물 체크리스트
+        </h1>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="비밀번호"
+            className="h-14 rounded-sm border border-hairline px-4 text-base text-ink placeholder:text-muted focus:border-2 focus:border-ink focus:outline-none"
+            autoFocus
+          />
+          {error && <p className="text-sm text-error">{error}</p>}
+          <button
+            type="submit"
+            disabled={submitting}
+            className="h-12 rounded-sm bg-primary text-base font-medium text-on-primary transition-colors hover:bg-primary-active disabled:bg-primary-disabled"
+          >
+            {submitting ? "확인 중..." : "입장"}
+          </button>
+        </form>
+      </div>
     </main>
   );
 }

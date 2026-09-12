@@ -68,9 +68,9 @@ export default function BulkPasteModal({ tripId, existingItems, onClose, onCreat
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-lg rounded-lg bg-white p-5 shadow-lg">
-        <h2 className="mb-3 text-lg font-semibold">대량 붙여넣기</h2>
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-lg rounded-md bg-canvas p-6 shadow-airbnb">
+        <h2 className="mb-4 text-[20px] font-semibold text-ink">대량 붙여넣기</h2>
 
         {!showPreview ? (
           <>
@@ -78,17 +78,17 @@ export default function BulkPasteModal({ tripId, existingItems, onClose, onCreat
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder={"한 줄에 하나씩 준비물을 입력하세요\n예)\n여권\n충전기\n선크림"}
-              className="mb-3 h-48 w-full rounded border p-2 text-sm"
+              className="mb-4 h-48 w-full rounded-sm border border-hairline p-3 text-sm focus:border-2 focus:border-ink focus:outline-none"
               autoFocus
             />
-            <div className="flex justify-end gap-2">
-              <button onClick={onClose} className="rounded px-4 py-2 text-sm">
+            <div className="flex justify-end gap-3">
+              <button onClick={onClose} className="px-2 py-2 text-sm font-medium text-ink hover:underline">
                 취소
               </button>
               <button
                 onClick={openPreview}
                 disabled={lines.length === 0}
-                className="rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-50"
+                className="rounded-sm bg-primary px-4 py-2 text-sm font-medium text-on-primary hover:bg-primary-active disabled:bg-primary-disabled"
               >
                 미리보기 ({lines.length}개)
               </button>
@@ -96,10 +96,10 @@ export default function BulkPasteModal({ tripId, existingItems, onClose, onCreat
           </>
         ) : (
           <>
-            <p className="mb-2 text-sm text-zinc-500">
+            <p className="mb-3 text-sm text-muted">
               중복 항목은 기본적으로 제외 표시됩니다. 체크박스로 포함/제외를 조정하세요.
             </p>
-            <ul className="mb-3 max-h-64 overflow-y-auto rounded border">
+            <ul className="mb-4 max-h-64 overflow-y-auto rounded-sm border border-hairline">
               {lines.map((line, idx) => {
                 const isDuplicate = existingNames.has(normalize(line));
                 const included = !excluded.has(normalize(line));
@@ -107,32 +107,38 @@ export default function BulkPasteModal({ tripId, existingItems, onClose, onCreat
                   <li
                     key={`${line}-${idx}`}
                     data-testid="bulk-preview-line"
-                    className={`flex items-center gap-2 border-b px-3 py-1.5 text-sm last:border-b-0 ${
-                      isDuplicate ? "bg-amber-50" : ""
+                    className={`flex items-center gap-2 border-b border-hairline-soft px-3 py-2 text-sm last:border-b-0 ${
+                      isDuplicate ? "bg-primary/5" : ""
                     }`}
                   >
                     <input
                       type="checkbox"
                       checked={included}
                       onChange={() => toggleInclude(line)}
+                      className="accent-primary"
                     />
-                    <span className="flex-1">{line}</span>
+                    <span className="flex-1 text-ink">{line}</span>
                     {isDuplicate && (
-                      <span className="text-xs text-amber-600">중복</span>
+                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                        중복
+                      </span>
                     )}
                   </li>
                 );
               })}
             </ul>
-            {error && <p className="mb-2 text-sm text-red-600">{error}</p>}
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setShowPreview(false)} className="rounded px-4 py-2 text-sm">
+            {error && <p className="mb-3 text-sm text-error">{error}</p>}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowPreview(false)}
+                className="px-2 py-2 text-sm font-medium text-ink hover:underline"
+              >
                 뒤로
               </button>
               <button
                 onClick={handleConfirm}
                 disabled={submitting}
-                className="rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-50"
+                className="rounded-sm bg-primary px-4 py-2 text-sm font-medium text-on-primary hover:bg-primary-active disabled:bg-primary-disabled"
               >
                 {submitting ? "등록 중..." : "등록 확정"}
               </button>

@@ -16,11 +16,11 @@ export default function DroppableColumn({ id, title, children }: DroppableColumn
     <div
       ref={setNodeRef}
       data-testid={`column-${id}`}
-      className={`flex min-h-[200px] flex-1 flex-col gap-2 rounded-lg border-2 p-3 transition-colors ${
-        isOver ? "border-blue-400 bg-blue-50" : "border-dashed border-zinc-200"
+      className={`flex min-h-[200px] flex-1 flex-col gap-2 rounded-md border p-4 transition-colors ${
+        isOver ? "border-primary bg-primary/5" : "border-hairline-soft bg-surface-soft"
       }`}
     >
-      <h3 className="mb-1 font-semibold text-zinc-700">{title}</h3>
+      <h3 className="mb-1 text-base font-semibold text-ink">{title}</h3>
       {children}
     </div>
   );

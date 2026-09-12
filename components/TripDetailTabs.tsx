@@ -19,25 +19,27 @@ export default function TripDetailTabs({ tripId }: TripDetailTabsProps) {
   const [tab, setTab] = useState<Tab>("checklist");
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10">
-      <Link href="/trips" className="mb-4 inline-block text-sm text-zinc-500">
+    <main className="mx-auto max-w-4xl px-4 py-16">
+      <Link href="/trips" className="mb-6 inline-block text-sm text-muted hover:text-ink">
         ← 여행 목록
       </Link>
-      <h1 className="mb-1 text-2xl font-bold">{trip?.name ?? "불러오는 중..."}</h1>
+      <h1 className="text-[22px] font-medium leading-tight text-ink">
+        {trip?.name ?? "불러오는 중..."}
+      </h1>
       {trip && (
-        <p className="mb-4 text-sm text-zinc-500">
+        <p className="mt-1 mb-8 text-sm text-muted">
           {trip.startDate.slice(0, 10)} ~ {trip.endDate.slice(0, 10)}
         </p>
       )}
 
-      <div className="mb-4 flex gap-1 border-b">
+      <div className="mb-8 flex gap-6 border-b border-hairline">
         <button
           onClick={() => setTab("checklist")}
           data-testid="tab-checklist"
-          className={`px-4 py-2 text-sm font-medium ${
+          className={`relative pb-3 text-base font-semibold ${
             tab === "checklist"
-              ? "border-b-2 border-black text-black"
-              : "text-zinc-400 hover:text-zinc-600"
+              ? "text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-ink"
+              : "text-muted hover:text-ink"
           }`}
         >
           준비물
@@ -45,10 +47,10 @@ export default function TripDetailTabs({ tripId }: TripDetailTabsProps) {
         <button
           onClick={() => setTab("itinerary")}
           data-testid="tab-itinerary"
-          className={`px-4 py-2 text-sm font-medium ${
+          className={`relative pb-3 text-base font-semibold ${
             tab === "itinerary"
-              ? "border-b-2 border-black text-black"
-              : "text-zinc-400 hover:text-zinc-600"
+              ? "text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-ink"
+              : "text-muted hover:text-ink"
           }`}
         >
           일정

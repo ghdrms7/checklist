@@ -23,25 +23,25 @@ export default function ItineraryEventRow({ event, onSave, onDelete }: Itinerary
 
   if (editing) {
     return (
-      <li className="flex flex-wrap items-center gap-2 border-b px-3 py-2 text-sm last:border-b-0">
+      <li className="flex flex-wrap items-center gap-2 border-b border-hairline-soft px-4 py-3 text-sm last:border-b-0">
         <input
           value={time}
           onChange={(e) => setTime(e.target.value)}
-          className="w-20 rounded border px-2 py-1"
+          className="w-20 rounded-sm border border-hairline px-2 py-1 focus:border-2 focus:border-ink focus:outline-none"
           autoFocus
         />
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="min-w-[8rem] flex-1 rounded border px-2 py-1"
+          className="min-w-[8rem] flex-1 rounded-sm border border-hairline px-2 py-1 focus:border-2 focus:border-ink focus:outline-none"
         />
         <input
           value={location}
           onChange={(e) => setLocation(e.target.value)}
           placeholder="장소 (선택)"
-          className="min-w-[8rem] flex-1 rounded border px-2 py-1"
+          className="min-w-[8rem] flex-1 rounded-sm border border-hairline px-2 py-1 focus:border-2 focus:border-ink focus:outline-none"
         />
-        <button onClick={saveEdit} className="text-blue-600">
+        <button onClick={saveEdit} className="text-sm font-medium text-primary hover:underline">
           저장
         </button>
       </li>
@@ -51,17 +51,17 @@ export default function ItineraryEventRow({ event, onSave, onDelete }: Itinerary
   return (
     <li
       data-testid="itinerary-event"
-      className="flex items-start gap-3 border-b px-3 py-2 text-sm last:border-b-0"
+      className="flex items-start gap-3 border-b border-hairline-soft px-4 py-3 text-sm last:border-b-0"
     >
-      <span className="w-14 shrink-0 font-medium text-zinc-500">{event.time}</span>
+      <span className="w-14 shrink-0 font-medium text-muted">{event.time}</span>
       <button onClick={() => setEditing(true)} className="flex-1 text-left">
-        <span className="text-zinc-900">{event.title}</span>
-        {event.location && <div className="text-xs text-zinc-400">{event.location}</div>}
+        <span className="text-base text-ink">{event.title}</span>
+        {event.location && <div className="mt-0.5 text-sm text-muted">{event.location}</div>}
       </button>
       <button
         onClick={() => onDelete(event)}
         aria-label="일정 삭제"
-        className="text-zinc-400 hover:text-red-600"
+        className="text-muted-soft hover:text-error"
       >
         ✕
       </button>

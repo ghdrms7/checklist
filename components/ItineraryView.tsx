@@ -92,16 +92,24 @@ export default function ItineraryView({ tripId }: ItineraryViewProps) {
 
   return (
     <div>
-      {error && <div className="mb-3 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
+      {error && (
+        <div className="mb-4 rounded-sm bg-error/10 px-3 py-2 text-sm font-medium text-error">
+          {error}
+        </div>
+      )}
 
       {days.length === 0 && (
-        <p className="mb-4 text-sm text-zinc-500">등록된 일정이 없습니다. 아래에서 추가해보세요.</p>
+        <p className="mb-4 text-sm text-muted">등록된 일정이 없습니다. 아래에서 추가해보세요.</p>
       )}
 
       <div className="mb-6 flex flex-col gap-4">
         {days.map((group) => (
-          <div key={group.day} data-testid={`itinerary-day-${group.day}`} className="rounded border">
-            <h3 className="border-b bg-zinc-50 px-3 py-2 font-semibold text-zinc-700">
+          <div
+            key={group.day}
+            data-testid={`itinerary-day-${group.day}`}
+            className="rounded-md border border-hairline"
+          >
+            <h3 className="rounded-t-md border-b border-hairline bg-surface-soft px-4 py-3 text-base font-semibold text-ink">
               {group.dayLabel}
             </h3>
             <ul>
@@ -118,43 +126,46 @@ export default function ItineraryView({ tripId }: ItineraryViewProps) {
         ))}
       </div>
 
-      <form onSubmit={handleAdd} className="flex flex-col gap-2 rounded border p-3">
-        <h4 className="text-sm font-semibold">일정 추가</h4>
+      <form onSubmit={handleAdd} className="flex flex-col gap-2 rounded-md border border-hairline p-4">
+        <h4 className="text-sm font-semibold text-ink">일정 추가</h4>
         <div className="flex flex-wrap gap-2">
           <input
             type="number"
             min={1}
             value={day}
             onChange={(e) => setDay(Number(e.target.value))}
-            className="w-16 rounded border px-2 py-1.5 text-sm"
+            className="w-16 rounded-sm border border-hairline px-2 py-1.5 text-sm focus:border-2 focus:border-ink focus:outline-none"
             aria-label="일차 번호"
           />
           <input
             value={dayLabel}
             onChange={(e) => setDayLabel(e.target.value)}
             placeholder="예: 1일차 (9/14 월)"
-            className="min-w-[9rem] flex-1 rounded border px-2 py-1.5 text-sm"
+            className="min-w-[9rem] flex-1 rounded-sm border border-hairline px-2 py-1.5 text-sm focus:border-2 focus:border-ink focus:outline-none"
           />
           <input
             value={time}
             onChange={(e) => setTime(e.target.value)}
             placeholder="시간 (예: 09:00)"
-            className="w-28 rounded border px-2 py-1.5 text-sm"
+            className="w-28 rounded-sm border border-hairline px-2 py-1.5 text-sm focus:border-2 focus:border-ink focus:outline-none"
           />
         </div>
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="일정 내용"
-          className="rounded border px-2 py-1.5 text-sm"
+          className="rounded-sm border border-hairline px-2 py-1.5 text-sm focus:border-2 focus:border-ink focus:outline-none"
         />
         <input
           value={location}
           onChange={(e) => setLocation(e.target.value)}
           placeholder="장소 (선택)"
-          className="rounded border px-2 py-1.5 text-sm"
+          className="rounded-sm border border-hairline px-2 py-1.5 text-sm focus:border-2 focus:border-ink focus:outline-none"
         />
-        <button type="submit" className="self-start rounded bg-black px-4 py-1.5 text-sm text-white">
+        <button
+          type="submit"
+          className="self-start rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-on-primary hover:bg-primary-active"
+        >
           추가
         </button>
       </form>

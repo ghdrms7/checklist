@@ -109,35 +109,43 @@ export default function TripBoard({ tripId }: TripBoardProps) {
 
   return (
     <div>
-      <div className="mb-4">
-        <div className="mb-1 flex justify-between text-sm text-zinc-600">
+      <div className="mb-6">
+        <div className="mb-2 flex justify-between text-sm text-muted">
           <span>완료율</span>
-          <span>{completionRate}%</span>
+          <span className="font-medium text-ink">{completionRate}%</span>
         </div>
-        <div className="h-2 w-full rounded bg-zinc-200">
+        <div className="h-2 w-full rounded-full bg-surface-strong">
           <div
-            className="h-2 rounded bg-green-500 transition-all"
+            className="h-2 rounded-full bg-primary transition-all"
             style={{ width: `${completionRate}%` }}
           />
         </div>
       </div>
 
-      {banner && <div className="mb-3 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{banner}</div>}
-      {error && <div className="mb-3 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
+      {banner && (
+        <div className="mb-4 rounded-sm bg-primary/10 px-3 py-2 text-sm font-medium text-primary">
+          {banner}
+        </div>
+      )}
+      {error && (
+        <div className="mb-4 rounded-sm bg-error/10 px-3 py-2 text-sm font-medium text-error">
+          {error}
+        </div>
+      )}
 
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="mb-6 flex flex-wrap gap-3 rounded-xl border border-hairline bg-surface-soft p-4">
         <form onSubmit={handleAddItem} className="flex flex-1 flex-wrap gap-2">
           <input
             type="text"
             value={newItemName}
             onChange={(e) => setNewItemName(e.target.value)}
             placeholder="준비물 이름"
-            className="min-w-[8rem] flex-1 rounded border px-3 py-2 text-sm"
+            className="min-w-[8rem] flex-1 rounded-sm border border-hairline bg-canvas px-3 py-2 text-sm focus:border-2 focus:border-ink focus:outline-none"
           />
           <select
             value={newItemOwner}
             onChange={(e) => setNewItemOwner(e.target.value as ItemOwner)}
-            className="rounded border px-2 py-2 text-sm"
+            className="rounded-sm border border-hairline bg-canvas px-2 py-2 text-sm"
           >
             <option value="parent">부모</option>
             <option value="baby">아기</option>
@@ -148,20 +156,23 @@ export default function TripBoard({ tripId }: TripBoardProps) {
             value={newItemCategory}
             onChange={(e) => setNewItemCategory(e.target.value)}
             placeholder="분류 (선택)"
-            className="w-28 rounded border px-2 py-2 text-sm"
+            className="w-28 rounded-sm border border-hairline bg-canvas px-2 py-2 text-sm focus:border-2 focus:border-ink focus:outline-none"
           />
           <datalist id="category-presets">
             {ITEM_CATEGORY_PRESETS.map((preset) => (
               <option key={preset} value={preset} />
             ))}
           </datalist>
-          <button type="submit" className="rounded bg-black px-4 py-2 text-sm text-white">
+          <button
+            type="submit"
+            className="rounded-sm bg-primary px-4 py-2 text-sm font-medium text-on-primary hover:bg-primary-active"
+          >
             추가
           </button>
         </form>
         <button
           onClick={() => setShowBulkModal(true)}
-          className="rounded border px-4 py-2 text-sm"
+          className="rounded-sm border border-ink px-4 py-2 text-sm font-medium text-ink hover:bg-surface-strong"
         >
           대량 붙여넣기
         </button>

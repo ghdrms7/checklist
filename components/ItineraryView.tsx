@@ -1,5 +1,7 @@
 "use client";
 
+import { DndContext, type DragEndEvent } from "@dnd-kit/core";
+import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useState } from "react";
 import useSWR from "swr";
 import { createItineraryEvent, deleteItineraryEvent, fetcher, updateItineraryEvent } from "@/lib/api";
@@ -26,7 +28,9 @@ function groupByDay(events: ItineraryEvent[]): DayGroup[] {
       groups.set(event.day, { day: event.day, dayLabel: event.dayLabel, events: [event] });
     }
   }
-  return Array.from(groups.values()).sort((a, b) => a.day - b.day);
+  return Array.from(groups.values())
+    .map((group) => ({ ...group, events: [...group.events].sort((a, b) => a.order - b.order) }))
+    .sort((a, b) => a.day - b.day);
 }
 
 export default function ItineraryView({ tripId }: ItineraryViewProps) {
@@ -90,6 +94,44 @@ export default function ItineraryView({ tripId }: ItineraryViewProps) {
     }
   }
 
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !events) return;
+
+    const activeEvent = events.find((e) => e._id === active.id);
+    const overEvent = events.find((e) => e._id === over.id);
+    if (!activeEvent || !overEvent || activeEvent.day !== overEvent.day) return;
+
+    const dayEvents = events
+      .filter((e) => e.day === activeEvent.day)
+      .sort((a, b) => a.order - b.order);
+    const oldIndex = dayEvents.findIndex((e) => e._id === active.id);
+    const newIndex = dayEvents.findIndex((e) => e._id === over.id);
+    const reordered = arrayMove(dayEvents, oldIndex, newIndex).map((e, index) => ({
+      ...e,
+      order: index,
+    }));
+
+    const otherEvents = events.filter((e) => e.day !== activeEvent.day);
+    const nextEvents = [...otherEvents, ...reordered];
+
+    setError(null);
+    mutate(
+      async () => {
+        await Promise.all(reordered.map((e) => updateItineraryEvent(e._id, { order: e.order })));
+        return nextEvents;
+      },
+      {
+        optimisticData: nextEvents,
+        rollbackOnError: true,
+        populateCache: true,
+        revalidate: false,
+      }
+    ).catch((err) => {
+      setError(err instanceof Error ? err.message : "순서 변경에 실패했습니다");
+    });
+  }
+
   return (
     <div>
       {error && (
@@ -102,29 +144,36 @@ export default function ItineraryView({ tripId }: ItineraryViewProps) {
         <p className="mb-4 text-sm text-muted">등록된 일정이 없습니다. 아래에서 추가해보세요.</p>
       )}
 
-      <div className="mb-6 flex flex-col gap-4">
-        {days.map((group) => (
-          <div
-            key={group.day}
-            data-testid={`itinerary-day-${group.day}`}
-            className="rounded-md border border-hairline"
-          >
-            <h3 className="rounded-t-md border-b border-hairline bg-surface-soft px-4 py-3 text-base font-semibold text-ink">
-              {group.dayLabel}
-            </h3>
-            <ul>
-              {group.events.map((event) => (
-                <ItineraryEventRow
-                  key={event._id}
-                  event={event}
-                  onSave={handleSave}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
+      <DndContext onDragEnd={handleDragEnd}>
+        <div className="mb-6 flex flex-col gap-4">
+          {days.map((group) => (
+            <div
+              key={group.day}
+              data-testid={`itinerary-day-${group.day}`}
+              className="rounded-md border border-hairline"
+            >
+              <h3 className="rounded-t-md border-b border-hairline bg-surface-soft px-4 py-3 text-base font-semibold text-ink">
+                {group.dayLabel}
+              </h3>
+              <SortableContext
+                items={group.events.map((event) => event._id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <ul>
+                  {group.events.map((event) => (
+                    <ItineraryEventRow
+                      key={event._id}
+                      event={event}
+                      onSave={handleSave}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+                </ul>
+              </SortableContext>
+            </div>
+          ))}
+        </div>
+      </DndContext>
 
       <form onSubmit={handleAdd} className="flex flex-col gap-2 rounded-md border border-hairline p-4">
         <h4 className="text-sm font-semibold text-ink">일정 추가</h4>

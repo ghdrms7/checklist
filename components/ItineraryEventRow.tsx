@@ -1,5 +1,7 @@
 "use client";
 
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useState } from "react";
 import type { ItineraryEvent } from "@/lib/types";
 
@@ -10,10 +12,19 @@ interface ItineraryEventRowProps {
 }
 
 export default function ItineraryEventRow({ event, onSave, onDelete }: ItineraryEventRowProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: event._id,
+  });
   const [editing, setEditing] = useState(false);
   const [time, setTime] = useState(event.time);
   const [title, setTitle] = useState(event.title);
   const [location, setLocation] = useState(event.location ?? "");
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
 
   function saveEdit() {
     if (!time.trim() || !title.trim()) return;
@@ -50,9 +61,19 @@ export default function ItineraryEventRow({ event, onSave, onDelete }: Itinerary
 
   return (
     <li
+      ref={setNodeRef}
+      style={style}
       data-testid="itinerary-event"
-      className="flex items-start gap-3 border-b border-hairline-soft px-4 py-3 text-sm last:border-b-0"
+      className="flex items-start gap-3 border-b border-hairline-soft bg-canvas px-4 py-3 text-sm last:border-b-0"
     >
+      <button
+        {...attributes}
+        {...listeners}
+        aria-label="드래그 핸들"
+        className="mt-0.5 cursor-grab select-none text-muted-soft"
+      >
+        ⠿
+      </button>
       <span className="w-14 shrink-0 font-medium text-muted">{event.time}</span>
       <button onClick={() => setEditing(true)} className="flex-1 text-left">
         <span className="text-base text-ink">{event.title}</span>

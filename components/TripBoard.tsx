@@ -14,6 +14,7 @@ interface TripBoardProps {
 }
 
 type OwnerFilter = "all" | ItemOwner;
+type ColumnId = "incomplete" | "complete";
 
 export default function TripBoard({ tripId }: TripBoardProps) {
   const { data: items, mutate } = useSWR<Item[]>(`/api/trips/${tripId}/items`, fetcher);
@@ -23,6 +24,7 @@ export default function TripBoard({ tripId }: TripBoardProps) {
   const [newItemCategory, setNewItemCategory] = useState("");
   const [ownerFilter, setOwnerFilter] = useState<OwnerFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [activeColumn, setActiveColumn] = useState<ColumnId>("incomplete");
   const [error, setError] = useState<string | null>(null);
 
   const displayItems = items ?? [];
@@ -201,30 +203,59 @@ export default function TripBoard({ tripId }: TripBoardProps) {
         </select>
       </div>
 
+      <div className="mb-3 flex gap-1 border-b border-hairline sm:hidden">
+        <button
+          onClick={() => setActiveColumn("incomplete")}
+          data-testid="tab-column-incomplete"
+          className={`relative pb-2 text-sm font-semibold ${
+            activeColumn === "incomplete"
+              ? "text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-ink"
+              : "text-muted"
+          }`}
+        >
+          미완료 ({incomplete.length})
+        </button>
+        <button
+          onClick={() => setActiveColumn("complete")}
+          data-testid="tab-column-complete"
+          className={`relative ml-4 pb-2 text-sm font-semibold ${
+            activeColumn === "complete"
+              ? "text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-ink"
+              : "text-muted"
+          }`}
+        >
+          완료 ({complete.length})
+        </button>
+      </div>
+
       <DndContext onDragEnd={handleDragEnd}>
         <div className="flex flex-col gap-4 sm:flex-row">
-          <DroppableColumn id="incomplete" title={`미완료 (${incomplete.length})`}>
-            {incomplete.map((item) => (
-              <ItemCard
-                key={item._id}
-                item={item}
-                onToggleStatus={(it) => changeStatus(it, "complete")}
-                onRename={handleRename}
-                onDelete={handleDelete}
-              />
-            ))}
-          </DroppableColumn>
-          <DroppableColumn id="complete" title={`완료 (${complete.length})`}>
-            {complete.map((item) => (
-              <ItemCard
-                key={item._id}
-                item={item}
-                onToggleStatus={(it) => changeStatus(it, "incomplete")}
-                onRename={handleRename}
-                onDelete={handleDelete}
-              />
-            ))}
-          </DroppableColumn>
+          <div className={activeColumn === "incomplete" ? "contents" : "hidden sm:contents"}>
+            <DroppableColumn id="incomplete" title={`미완료 (${incomplete.length})`}>
+              {incomplete.map((item) => (
+                <ItemCard
+                  key={item._id}
+                  item={item}
+                  onToggleStatus={(it) => changeStatus(it, "complete")}
+                  onRename={handleRename}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </DroppableColumn>
+          </div>
+          <div className={activeColumn === "complete" ? "contents" : "hidden sm:contents"}>
+            <DroppableColumn id="complete" title={`완료 (${complete.length})`}>
+              {complete.map((item) => (
+                <ItemCard
+                  key={item._id}
+                  item={item}
+                  onToggleStatus={(it) => changeStatus(it, "incomplete")}
+                  onRename={handleRename}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </DroppableColumn>
+          </div>
         </div>
       </DndContext>
     </div>
